@@ -14,10 +14,10 @@ pub(crate) struct Settings {
 
 impl Trusties for Settings {
     fn trusted_users(&self) -> HashSet<String> {
-        return self.allowed_users.clone();
+        self.allowed_users.clone()
     }
 
     fn trusted_groups(&self) -> HashSet<String> {
-        return self.allowed_groups.clone();
+        self.allowed_groups.clone()
     }
 }

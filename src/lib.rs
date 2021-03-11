@@ -44,11 +44,11 @@ fn has_container_with_allow_privilege_escalation(
     let query = "spec.containers[*].securityContext.allowPrivilegeEscalation";
 
     let containers_query = jmespatch::compile(query)
-        .or_else(|e| Err(anyhow!("Cannot parse jmespath expression: {:?}", e,)))?;
+        .map_err(|e| anyhow!("Cannot parse jmespath expression: {:?}", e,))?;
 
     let raw_search_result = validation_req
         .search(containers_query)
-        .or_else(|e| Err(anyhow!("Error while searching request: {:?}", e,)))?;
+        .map_err(|e| anyhow!("Error while searching request: {:?}", e,))?;
     let search_result = raw_search_result.as_array().ok_or_else(|| {
         anyhow!(
             "Expected search matches to be an Array, got {:?} instead",
@@ -65,11 +65,11 @@ fn pod_spec_allows_privilege_escalation(
     let query = "spec.securityContext.allowPrivilegeEscalation";
 
     let containers_query = jmespatch::compile(query)
-        .or_else(|e| Err(anyhow!("Cannot parse jmespath expression: {:?}", e,)))?;
+        .map_err(|e| anyhow!("Cannot parse jmespath expression: {:?}", e,))?;
 
     let search_result = validation_req
         .search(containers_query)
-        .or_else(|e| Err(anyhow!("Error while searching request: {:?}", e,)))?;
+        .map_err(|e| anyhow!("Error while searching request: {:?}", e,))?;
 
     Ok(search_result.is_truthy())
 }
