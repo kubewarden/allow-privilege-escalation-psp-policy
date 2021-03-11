@@ -9,8 +9,6 @@ use settings::Settings;
 
 use chimera_kube_policy_sdk::{accept_request, reject_request, request::ValidationRequest};
 
-use jmespatch;
-
 #[no_mangle]
 pub extern "C" fn wapc_init() {
     register_function("validate", validate);

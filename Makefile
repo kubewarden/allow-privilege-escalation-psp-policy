@@ -16,8 +16,13 @@ publish: build registry
 fmt:
 	cargo fmt --all -- --check
 
+.PHONY: lint
+lint:
+	cargo clippy -- -D warnings
+
+
 .PHONY: test
-test: fmt
+test: fmt lint
 	cargo test
 
 .PHONY: clean
