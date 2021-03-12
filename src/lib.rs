@@ -21,9 +21,18 @@ fn validate(payload: &[u8]) -> CallResult {
         return accept_request();
     }
 
-    if has_container_with_allow_privilege_escalation(&validation_req)? {
+    let query = "spec.containers[*].securityContext.allowPrivilegeEscalation";
+    if has_container_with_allow_privilege_escalation(query, &validation_req)? {
         return reject_request(Some(format!(
             "User '{}' cannot create containers with allowPrivilegeEscalation enabled",
+            validation_req.request.user_info.username,
+        )));
+    }
+
+    let query = "spec.initContainers[*].securityContext.allowPrivilegeEscalation";
+    if has_container_with_allow_privilege_escalation(query, &validation_req)? {
+        return reject_request(Some(format!(
+            "User '{}' cannot create initContainers with allowPrivilegeEscalation enabled",
             validation_req.request.user_info.username,
         )));
     }
@@ -39,16 +48,19 @@ fn validate(payload: &[u8]) -> CallResult {
 }
 
 fn has_container_with_allow_privilege_escalation(
+    query: &str,
     validation_req: &ValidationRequest<Settings>,
 ) -> anyhow::Result<bool> {
-    let query = "spec.containers[*].securityContext.allowPrivilegeEscalation";
-
     let containers_query = jmespatch::compile(query)
         .map_err(|e| anyhow!("Cannot parse jmespath expression: {:?}", e,))?;
 
     let raw_search_result = validation_req
         .search(containers_query)
         .map_err(|e| anyhow!("Error while searching request: {:?}", e,))?;
+    if raw_search_result.is_null() {
+        return Ok(false);
+    }
+
     let search_result = raw_search_result.as_array().ok_or_else(|| {
         anyhow!(
             "Expected search matches to be an Array, got {:?} instead",
@@ -85,7 +97,7 @@ mod tests {
     use chimera_kube_policy_sdk::response::ValidationResponse;
 
     macro_rules! configuration {
-        (key: $key:tt, value: $value:tt, allowed_users: $users:expr, allowed_groups: $groups:expr) => {
+        (allowed_users: $users:expr, allowed_groups: $groups:expr) => {
             Settings {
                 allowed_users: $users.split(",").map(String::from).collect(),
                 allowed_groups: $groups.split(",").map(String::from).collect(),
@@ -142,8 +154,6 @@ mod tests {
                 name: String::from("Accept request because user is trusted"),
                 fixture_file: String::from(request_file),
                 settings: configuration!(
-                key: "dedicated",
-                value: "tenantA",
                 allowed_users: "admin,kubernetes-admin",
                 allowed_groups: ""),
                 expected_validation_result: true,
@@ -152,8 +162,6 @@ mod tests {
                 name: String::from("Accept request because user belongs to a trusted group"),
                 fixture_file: String::from(request_file),
                 settings: configuration!(
-                key: "dedicated",
-                value: "tenantA",
                 allowed_users: "",
                 allowed_groups: "system:masters"),
                 expected_validation_result: true,
@@ -162,8 +170,6 @@ mod tests {
                 name: String::from("Reject request because user is not trusted"),
                 fixture_file: String::from(request_file),
                 settings: configuration!(
-                key: "dedicated",
-                value: "tenantA",
                 allowed_users: "alice",
                 allowed_groups: "trusted_users"),
                 expected_validation_result: false,
@@ -186,8 +192,6 @@ mod tests {
                 name: String::from("Accept request because user is trusted"),
                 fixture_file: String::from(request_file),
                 settings: configuration!(
-                key: "dedicated",
-                value: "tenantA",
                 allowed_users: "admin,kubernetes-admin",
                 allowed_groups: ""),
                 expected_validation_result: true,
@@ -196,8 +200,6 @@ mod tests {
                 name: String::from("Accept request because user belongs to a trusted group"),
                 fixture_file: String::from(request_file),
                 settings: configuration!(
-                key: "dedicated",
-                value: "tenantA",
                 allowed_users: "",
                 allowed_groups: "system:masters"),
                 expected_validation_result: true,
@@ -206,8 +208,44 @@ mod tests {
                 name: String::from("Reject request because user is not trusted"),
                 fixture_file: String::from(request_file),
                 settings: configuration!(
-                key: "dedicated",
-                value: "tenantA",
+                allowed_users: "alice",
+                allowed_groups: "trusted_users"),
+                expected_validation_result: false,
+            },
+        ];
+
+        for tc in tests.iter() {
+            let _ = tc.eval();
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn pod_with_init_container_with_allow_privilege_escalation_enabled() -> Result<()> {
+        let request_file =
+            "test_data/req_pod_with_init_container_with_security_context_and_allowPrivilegeEscalation.json";
+        let tests = vec![
+            Testcase {
+                name: String::from("Accept request because user is trusted"),
+                fixture_file: String::from(request_file),
+                settings: configuration!(
+                allowed_users: "admin,kubernetes-admin",
+                allowed_groups: ""),
+                expected_validation_result: true,
+            },
+            Testcase {
+                name: String::from("Accept request because user belongs to a trusted group"),
+                fixture_file: String::from(request_file),
+                settings: configuration!(
+                allowed_users: "",
+                allowed_groups: "system:masters"),
+                expected_validation_result: true,
+            },
+            Testcase {
+                name: String::from("Reject request because user is not trusted"),
+                fixture_file: String::from(request_file),
+                settings: configuration!(
                 allowed_users: "alice",
                 allowed_groups: "trusted_users"),
                 expected_validation_result: false,
@@ -229,8 +267,6 @@ mod tests {
                 name: String::from("Accept request because user is trusted"),
                 fixture_file: String::from(request_file),
                 settings: configuration!(
-                key: "dedicated",
-                value: "tenantA",
                 allowed_users: "admin,kubernetes-admin",
                 allowed_groups: ""),
                 expected_validation_result: true,
@@ -239,8 +275,6 @@ mod tests {
                 name: String::from("Accept request because user belongs to a trusted group"),
                 fixture_file: String::from(request_file),
                 settings: configuration!(
-                key: "dedicated",
-                value: "tenantA",
                 allowed_users: "",
                 allowed_groups: "system:masters"),
                 expected_validation_result: true,
@@ -249,8 +283,6 @@ mod tests {
                 name: String::from("Accept request even if user is not trusted because allowPrivilegeEscalation is not set"),
                 fixture_file: String::from(request_file),
                 settings: configuration!(
-                key: "dedicated",
-                value: "tenantA",
                 allowed_users: "alice",
                 allowed_groups: "trusted_users"),
                 expected_validation_result: true,
