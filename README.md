@@ -11,28 +11,7 @@ that limits the usage of the [`allowPrivilegeEscalation`](https://kubernetes.io/
 This policy rejects all the Pods that have the `allowPrivilegeEscalation`
 security context enabled.
 
-It's possible to specify a list of users and groups of users who
-are not affected by this policy.
-
-# Configuration
-
-The policy can be configured with the following data structure:
-
-```yml
-# list of groups that are not impacted by the policy
-allowed_groups:
-- administrators
-- system:masters
-
-# list of users that are not impacted by the policy
-allowed_users:
-- alice
-- joe
-```
-
-Both the `allowed_users` and the `allowed_groups` values are optional.
-Leaving both fields unspecified will prohibit all users from creating Pods with
-`allowPrivilegeEscalation` enabled.
+The policy inspects also `initContainers`.
 
 # Examples
 

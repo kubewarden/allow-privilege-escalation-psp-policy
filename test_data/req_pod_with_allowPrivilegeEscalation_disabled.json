@@ -95,11 +95,34 @@
           }
         }
       ],
+      "initContainers": [
+        {
+          "name": "init-myservice",
+          "image": "init-myservice",
+          "resources": {},
+          "securityContext": {
+            "allowPrivilegeEscalation": false
+          },
+          "volumeMounts": [
+            {
+              "name": "default-token-pvpz7",
+              "readOnly": true,
+              "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+            }
+          ],
+          "terminationMessagePath": "/dev/termination-log",
+          "terminationMessagePolicy": "File",
+          "imagePullPolicy": "IfNotPresent"
+        }
+      ],
       "containers": [
         {
           "name": "nginx",
           "image": "nginx",
           "resources": {},
+          "securityContext": {
+            "allowPrivilegeEscalation": false
+          },
           "volumeMounts": [
             {
               "name": "default-token-pvpz7",
@@ -132,9 +155,7 @@
       "dnsPolicy": "ClusterFirst",
       "serviceAccountName": "default",
       "serviceAccount": "default",
-      "securityContext": {
-        "allowPrivilegeEscalation": true
-      },
+      "securityContext": {},
       "schedulerName": "default-scheduler",
       "tolerations": [
         {
