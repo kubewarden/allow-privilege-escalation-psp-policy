@@ -7,7 +7,7 @@ use std::rc::Rc;
 mod settings;
 use settings::Settings;
 
-use chimera_kube_policy_sdk::{accept_request, reject_request, request::ValidationRequest};
+use kubewarden_policy_sdk::{accept_request, reject_request, request::ValidationRequest};
 
 #[no_mangle]
 pub extern "C" fn wapc_init() {
@@ -70,7 +70,7 @@ fn has_container_with_allow_privilege_escalation(
 mod tests {
     use super::*;
     use anyhow::Result;
-    use chimera_kube_policy_sdk::test::Testcase;
+    use kubewarden_policy_sdk::test::Testcase;
 
     #[test]
     fn reject_container_with_allow_privilege_escalation_enabled() -> Result<()> {
