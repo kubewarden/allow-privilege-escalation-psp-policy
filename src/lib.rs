@@ -1,13 +1,12 @@
 extern crate wapc_guest as guest;
 use guest::prelude::*;
 
-use anyhow::anyhow;
-use std::rc::Rc;
-
 mod settings;
 use settings::Settings;
 
-use chimera_kube_policy_sdk::{accept_request, reject_request, request::ValidationRequest};
+use kubewarden_policy_sdk::{accept_request, reject_request, request::ValidationRequest};
+
+use k8s_openapi::api::core::v1 as apicore;
 
 #[no_mangle]
 pub extern "C" fn wapc_init() {
@@ -16,61 +15,44 @@ pub extern "C" fn wapc_init() {
 
 fn validate(payload: &[u8]) -> CallResult {
     let validation_req = ValidationRequest::<Settings>::new(payload)?;
+    let pod = serde_json::from_value::<apicore::Pod>(validation_req.request.object)?;
 
-    let query = "spec.containers[*].securityContext.allowPrivilegeEscalation";
-    if has_container_with_allow_privilege_escalation(query, &validation_req)? {
-        return reject_request(
+    let any_allowed_privilege_escalation_container = pod
+        .spec
+        .map(|spec| {
+            has_allowed_privilege_escalation_container(spec.init_containers)
+                || has_allowed_privilege_escalation_container(Some(spec.containers))
+        })
+        .unwrap_or(false);
+
+    if any_allowed_privilege_escalation_container {
+        reject_request(
             Some(format!(
                 "User '{}' cannot create containers with allowPrivilegeEscalation enabled",
                 validation_req.request.user_info.username,
             )),
             None,
-        );
+        )
+    } else {
+        accept_request()
     }
-
-    let query = "spec.initContainers[*].securityContext.allowPrivilegeEscalation";
-    if has_container_with_allow_privilege_escalation(query, &validation_req)? {
-        return reject_request(
-            Some(format!(
-                "User '{}' cannot create initContainers with allowPrivilegeEscalation enabled",
-                validation_req.request.user_info.username,
-            )),
-            None,
-        );
-    }
-
-    accept_request()
 }
 
-fn has_container_with_allow_privilege_escalation(
-    query: &str,
-    validation_req: &ValidationRequest<Settings>,
-) -> anyhow::Result<bool> {
-    let containers_query = jmespatch::compile(query)
-        .map_err(|e| anyhow!("Cannot parse jmespath expression: {:?}", e,))?;
-
-    let raw_search_result = validation_req
-        .search(containers_query)
-        .map_err(|e| anyhow!("Error while searching request: {:?}", e,))?;
-    if raw_search_result.is_null() {
-        return Ok(false);
-    }
-
-    let search_result = raw_search_result.as_array().ok_or_else(|| {
-        anyhow!(
-            "Expected search matches to be an Array, got {:?} instead",
-            raw_search_result
-        )
-    })?;
-
-    Ok(search_result.contains(&Rc::new(jmespatch::Variable::Bool(true))))
+fn has_allowed_privilege_escalation_container(containers: Option<Vec<apicore::Container>>) -> bool {
+    containers.unwrap_or_default().into_iter().any(|container| {
+        container
+            .security_context
+            .map_or(false, |security_context| {
+                security_context.allow_privilege_escalation.unwrap_or(false)
+            })
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use anyhow::Result;
-    use chimera_kube_policy_sdk::test::Testcase;
+    use kubewarden_policy_sdk::test::Testcase;
 
     #[test]
     fn reject_container_with_allow_privilege_escalation_enabled() -> Result<()> {

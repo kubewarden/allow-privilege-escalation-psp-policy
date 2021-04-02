@@ -1,9 +1,9 @@
 
  Continuous integration | License
  -----------------------|--------
-![Continuous integration](https://github.com/chimera-kube/psp-allow-privilege-escalation/workflows/Continuous%20integration/badge.svg) | [![License: Apache 2.0](https://img.shields.io/badge/License-Apache2.0-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+![Continuous integration](https://github.com/kubewarden/psp-allow-privilege-escalation/workflows/Continuous%20integration/badge.svg) | [![License: Apache 2.0](https://img.shields.io/badge/License-Apache2.0-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This Chimera Policy is a replacement for the Kubernetes Pod Security Policy
+This Kubewarden Policy is a replacement for the Kubernetes Pod Security Policy
 that limits the usage of the [`allowPrivilegeEscalation`](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/).
 
 # How the policy works
@@ -76,9 +76,9 @@ spec:
 # Obtain policy
 
 The policy is automatically published as an OCI artifact inside of
-[this](https://github.com/orgs/chimera-kube/packages/container/package/policies%2Fpsp-allow-privilege-escalation)
+[this](https://github.com/orgs/kubewarden/packages/container/package/policies%2Fpsp-allow-privilege-escalation)
 container registry.
 
 # Using the policy
 
-The easiest way to use this policy is through the [chimera-controller](https://github.com/chimera-kube/chimera-controller).
+The easiest way to use this policy is through the [kubewarden-controller](https://github.com/kubewarden/kubewarden-controller).
