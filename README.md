@@ -8,15 +8,14 @@ that limits the usage of the [`allowPrivilegeEscalation`](https://kubernetes.io/
 
 # How the policy works
 
-This policy rejects all the Pods that have the `allowPrivilegeEscalation`
-security context enabled.
-
-The policy inspects also `initContainers`.
+This policy rejects all the Pods that have at least one container or
+init container with the `allowPrivilegeEscalation` security context
+enabled.
 
 # Examples
 
-The following Pod will be rejected because the nginx container has `allowPrivilegeEscalation`
-enabled:
+The following Pod will be rejected because the nginx container has
+`allowPrivilegeEscalation` enabled:
 
 ```yaml
 apiVersion: v1
@@ -33,8 +32,8 @@ spec:
     image: sidecar
 ```
 
-The following Pod would be blocked because the `allowPrivilegeEscalation` is
-enabled at the Pod level:
+The following Pod would be blocked because one of the init containers
+has `allowPrivilegeEscalation` enabled:
 
 ```yaml
 apiVersion: v1
@@ -42,26 +41,6 @@ kind: Pod
 metadata:
   name: nginx
 spec:
-  securityContext:
-    allowPrivilegeEscalation: true
-  containers:
-  - name: nginx
-    image: nginx
-  - name: sidecar
-    image: sidecar
-```
-
-The following Pod would be blocked because one of the init containers has
-`allowPrivilegeEscalation` enabled:
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: nginx
-spec:
-  securityContext:
-    allowPrivilegeEscalation: true
   containers:
   - name: nginx
     image: nginx
