@@ -1,12 +1,12 @@
 name: psp-allow-privilege-escalation
 description: A Pod Security Policy that controls usage of `allowPrivilegeEscalation`
-homepage: https://github.com/kubewarden/psp-allow-privilege-escalation
+homepage: https://github.com/kubewarden/allow-privilege-escalation-psp-policy
 author:
   name: Kubewarden devs
   homepage: https://github.com/kubewarden
 download:
   registry: ghcr.io/kubewarden/policies/psp-allow-privilege-escalation:__TAG__
-  url: https://github.com/kubewarden/psp-allow-privilege-escalation/releases/download/__TAG__/policy.wasm
+  url: https://github.com/kubewarden/allow-privilege-escalation-psp-policy/releases/download/__TAG__/policy.wasm
 keywords:
   - PSP
   - Container

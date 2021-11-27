@@ -9,8 +9,8 @@ annotations:
   io.kubewarden.policy.title: psp-allow-privilege-escalation
   io.kubewarden.policy.description: Replacement for the Kubernetes Pod Security Policy that controls the allowance of privilege escalation in containers and init containers of a pod
   io.kubewarden.policy.author: Flavio Castelli
-  io.kubewarden.policy.url: https://github.com/kubewarden/psp-allow-privilege-escalation
-  io.kubewarden.policy.source: https://github.com/kubewarden/psp-allow-privilege-escalation
+  io.kubewarden.policy.url: https://github.com/kubewarden/allow-privilege-escalation-psp-policy
+  io.kubewarden.policy.source: https://github.com/kubewarden/allow-privilege-escalation-psp-policy
   io.kubewarden.policy.license: Apache-2.0
   io.kubewarden.policy.usage: |
     This policy works by inspecting the containers and init containers of a Pod.

@@ -1,7 +1,7 @@
 
  Continuous integration | License
  -----------------------|--------
-![Continuous integration](https://github.com/kubewarden/psp-allow-privilege-escalation/workflows/Continuous%20integration/badge.svg) | [![License: Apache 2.0](https://img.shields.io/badge/License-Apache2.0-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
+![Continuous integration](https://github.com/kubewarden/allow-privilege-escalation-psp-policy/workflows/Continuous%20integration/badge.svg) | [![License: Apache 2.0](https://img.shields.io/badge/License-Apache2.0-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
 
 This Kubewarden Policy is a replacement for the Kubernetes Pod Security Policy
 that limits the usage of the [`allowPrivilegeEscalation`](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/).
