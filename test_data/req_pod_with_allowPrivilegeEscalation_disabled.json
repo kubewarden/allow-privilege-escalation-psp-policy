@@ -138,6 +138,9 @@
           "name": "sidecar",
           "image": "sidecar",
           "resources": {},
+          "securityContext": {
+            "allowPrivilegeEscalation": false
+          },
           "volumeMounts": [
             {
               "name": "default-token-pvpz7",
