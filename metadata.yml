@@ -3,7 +3,7 @@ rules:
     apiVersions: ["v1"]
     resources: ["pods"]
     operations: ["CREATE", "UPDATE"]
-mutating: false
+mutating: true
 contextAware: false
 annotations:
   io.kubewarden.policy.title: psp-allow-privilege-escalation

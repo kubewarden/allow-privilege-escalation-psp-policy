@@ -13,5 +13,5 @@ keywords:
   - Privilege Escalation
 resources:
   - Pod
-mutation: false
+mutation: true
 contextAware: false
