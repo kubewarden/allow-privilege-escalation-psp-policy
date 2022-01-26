@@ -1,16 +1,11 @@
-HYPERFINE := $(shell command -v hyperfine 2> /dev/null)
+SOURCE_FILES := $(shell test -e src/ && find src -type f)
 
-.PHONY: build
-build:
+policy.wasm: $(SOURCE_FILES) Cargo.*
 	cargo build --target=wasm32-unknown-unknown --release
+	mv target/wasm32-unknown-unknown/release/*.wasm policy.wasm
 
-.PHONY: registry
-registry:
-	@sh -c 'docker inspect registry &> /dev/null || docker run -d -p 5000:5000 --name registry registry:2'
-
-.PHONY: publish
-publish: build registry
-	wasm-to-oci push target/wasm32-unknown-unknown/release/pod_toleration_policy.wasm localhost:5000/admission-wasm/pod-toleration-policy:v1
+annotated-policy.wasm: policy.wasm metadata.yml
+	kwctl annotate -m metadata.yml -o annotated-policy.wasm policy.wasm
 
 .PHONY: fmt
 fmt:
@@ -20,6 +15,9 @@ fmt:
 lint:
 	cargo clippy -- -D warnings
 
+.PHONY: e2e-tests
+e2e-tests: annotated-policy.wasm
+	@echo "Dummy target to allow using the reusable github actions to build, test and release policies"
 
 .PHONY: test
 test: fmt lint
@@ -28,7 +26,4 @@ test: fmt lint
 .PHONY: clean
 clean:
 	cargo clean
-
-.PHONY: e2e-tests
-e2e-tests:
-	@echo "Dummy target to allow using the reusable github actions to build, test and release policies"
+	rm -f policy.wasm annotated-policy.wasm
