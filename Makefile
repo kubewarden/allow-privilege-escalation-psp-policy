@@ -10,7 +10,7 @@ registry:
 
 .PHONY: publish
 publish: build registry
-	wasm-to-oci push target/wasm32-unknown-unknown/release/pod_toleration_policy.wasm localhost:5000/admission-wasm/pod-toleration-policy:v1
+	wasm-to-oci push target/wasm32-unknown-unknown/release/allow_privilege_escalation_psp.wasm localhost:5000/admission-wasm/allow_privilege_escalation_psp:v1
 
 .PHONY: fmt
 fmt:
