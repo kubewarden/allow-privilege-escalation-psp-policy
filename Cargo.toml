@@ -16,4 +16,4 @@ wapc-guest = "0.4.0"
 kubewarden-policy-sdk = "0.2.2"
 
 [dev-dependencies]
-serde_yaml = "0.8.13"
+serde_yaml = "0.8.23"
