@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 
-extern crate wapc_guest as guest;
 use guest::prelude::*;
+use kubewarden_policy_sdk::wapc_guest as guest;
 
 mod settings;
 use settings::Settings;
@@ -38,7 +38,7 @@ fn validate(payload: &[u8]) -> CallResult {
 
     match do_validate(pod, settings)? {
         PolicyResponse::Accept => accept_request(),
-        PolicyResponse::Reject(message) => reject_request(Some(message), None),
+        PolicyResponse::Reject(message) => reject_request(Some(message), None, None, None),
         PolicyResponse::Mutate(mutated_object) => mutate_request(mutated_object),
     }
 }
