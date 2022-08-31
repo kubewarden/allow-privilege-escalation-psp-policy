@@ -1,0 +1,23 @@
+---
+apiVersion: policies.kubewarden.io/v1
+kind: {{ .Values.kind }}
+metadata:
+  name: {{ .Values.name }}
+  {{- if eq .Values.kind "AdmissionPolicy" }}
+  namespace: {{ .Values.namespace }}
+  {{- end }}
+spec:
+  module: '{{ .Values.policy_module.repository }}:{{ .Values.policy_module.tag }}'
+  settings:
+    {{ .Values.settings | toYaml }}
+  rules:
+    - apiGroups:
+        - ""
+      apiVersions:
+        - v1
+      resources:
+        - pods
+      operations:
+        - CREATE
+        - UPDATE
+  mutating: true
