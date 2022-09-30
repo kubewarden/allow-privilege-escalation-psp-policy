@@ -1,5 +1,4 @@
-use anyhow::{anyhow, Result};
-
+//use anyhow::{anyhow, Result};
 use guest::prelude::*;
 use kubewarden_policy_sdk::wapc_guest as guest;
 
@@ -7,7 +6,7 @@ mod settings;
 use settings::Settings;
 
 use kubewarden_policy_sdk::{
-    accept_request, mutate_request, protocol_version_guest, reject_request,
+    accept_request, mutate_pod_spec_from_request, protocol_version_guest, reject_request,
     request::ValidationRequest, validate_settings,
 };
 
@@ -20,81 +19,75 @@ pub extern "C" fn wapc_init() {
     register_function("protocol_version", protocol_version_guest);
 }
 
-#[derive(Debug, PartialEq)]
-enum PolicyResponse {
-    Accept,
-    Reject(String),
-    Mutate(serde_json::Value),
-}
-
 fn validate(payload: &[u8]) -> CallResult {
     let validation_request = ValidationRequest::<Settings>::new(payload)?;
-    let pod = match serde_json::from_value::<apicore::Pod>(validation_request.request.object) {
-        Ok(pod) => pod,
-        Err(_) => return accept_request(),
-    };
+    match validation_request.extract_pod_spec_from_object() {
+        Ok(pod_spec) => {
+            if pod_spec.is_none() {
+                return accept_request();
+            }
+            let pod_spec = pod_spec.unwrap();
+            let mut errors = vec![];
 
-    let settings = validation_request.settings;
-
-    match do_validate(pod, settings)? {
-        PolicyResponse::Accept => accept_request(),
-        PolicyResponse::Reject(message) => reject_request(Some(message), None, None, None),
-        PolicyResponse::Mutate(mutated_object) => mutate_request(mutated_object),
-    }
-}
-
-fn do_validate(pod: apicore::Pod, settings: settings::Settings) -> Result<PolicyResponse> {
-    if pod.spec.is_none() {
-        return Ok(PolicyResponse::Accept);
-    }
-    let pod_spec = pod.spec.unwrap();
-    let mut errors = vec![];
-
-    let mutated_init_containers: Option<Vec<apicore::Container>> =
-        match pod_spec.init_containers.clone() {
-            Some(init_containers) => {
-                if has_allowed_privilege_escalation_container(init_containers.clone()) {
-                    errors.push("one of the init containers has privilege escalation enabled");
+            let mutated_init_containers: Option<Vec<apicore::Container>> = match pod_spec
+                .init_containers
+                .clone()
+            {
+                Some(init_containers) => {
+                    if has_allowed_privilege_escalation_container(init_containers.clone()) {
+                        errors.push("one of the init containers has privilege escalation enabled");
+                        None
+                    } else {
+                        patch_containers(
+                            init_containers,
+                            validation_request
+                                .settings
+                                .default_allow_privilege_escalation,
+                        )
+                    }
+                }
+                None => None,
+            };
+            let mutated_containers: Option<Vec<apicore::Container>> =
+                if has_allowed_privilege_escalation_container(pod_spec.containers.clone()) {
+                    errors.push("one of the containers has privilege escalation enabled");
                     None
                 } else {
-                    patch_containers(init_containers, settings.default_allow_privilege_escalation)
-                }
+                    patch_containers(
+                        pod_spec.containers.clone(),
+                        validation_request
+                            .settings
+                            .default_allow_privilege_escalation,
+                    )
+                };
+
+            if !errors.is_empty() {
+                return reject_request(Some(errors.join(", ")), None, None, None);
             }
-            None => None,
-        };
 
-    let mutated_containers: Option<Vec<apicore::Container>> =
-        if has_allowed_privilege_escalation_container(pod_spec.containers.clone()) {
-            errors.push("one of the containers has privilege escalation enabled");
-            None
-        } else {
-            patch_containers(
-                pod_spec.containers.clone(),
-                settings.default_allow_privilege_escalation,
-            )
-        };
+            if mutated_containers.is_some() || mutated_init_containers.is_some() {
+                let init_containers =
+                    mutated_init_containers.or_else(|| pod_spec.init_containers.clone());
+                let containers = mutated_containers.unwrap_or_else(|| pod_spec.containers.clone());
 
-    if !errors.is_empty() {
-        return Ok(PolicyResponse::Reject(errors.join(", ")));
-    }
-
-    if mutated_containers.is_some() || mutated_init_containers.is_some() {
-        let init_containers = mutated_init_containers.or_else(|| pod_spec.init_containers.clone());
-        let containers = mutated_containers.unwrap_or_else(|| pod_spec.containers.clone());
-
-        let mutated_pod = apicore::Pod {
-            spec: Some(apicore::PodSpec {
-                init_containers,
-                containers,
-                ..pod_spec
-            }),
-            ..pod
-        };
-        let mutated_pod_value = serde_json::to_value(&mutated_pod)
-            .map_err(|e| anyhow!("Cannot build mutated pod response: {:?}", e))?;
-        Ok(PolicyResponse::Mutate(mutated_pod_value))
-    } else {
-        Ok(PolicyResponse::Accept)
+                mutate_pod_spec_from_request(
+                    validation_request,
+                    apicore::PodSpec {
+                        init_containers,
+                        containers,
+                        ..pod_spec
+                    },
+                )
+            } else {
+                accept_request()
+            }
+        }
+        Err(_) => reject_request(
+            Some("Cannot parse validation request".to_string()),
+            None,
+            None,
+            None,
+        ),
     }
 }
 
@@ -239,6 +232,20 @@ mod tests {
         let vr = tc.eval(validate)?;
         assert!(vr.mutated_object.is_some());
 
+        Ok(())
+    }
+
+    #[test]
+    fn reject_deployment_with_container_with_allow_privilege_escalation_enabled() -> Result<()> {
+        let request_file = "test_data/deployment_with_allow_privileged_escalation.json";
+        let tc = Testcase {
+            name: String::from("Accept"),
+            fixture_file: String::from(request_file),
+            settings: Settings::default(),
+            expected_validation_result: false,
+        };
+
+        let _ = tc.eval(validate)?;
         Ok(())
     }
 }
