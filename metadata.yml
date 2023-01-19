@@ -13,11 +13,6 @@ annotations:
   io.kubewarden.policy.source: https://github.com/kubewarden/allow-privilege-escalation-psp-policy
   io.kubewarden.policy.license: Apache-2.0
   io.kubewarden.policy.usage: |
-    This Kubewarden Policy is a replacement for the Kubernetes Pod Security Policy
-    that limits the usage of the [`allowPrivilegeEscalation`](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/).
-
-    # How the policy works
-
     This policy rejects all the Pods that have at least one container or
     init container with the `allowPrivilegeEscalation` security context
     enabled.
@@ -27,7 +22,7 @@ annotations:
     This is a replacement of the `DefaultAllowPrivilegeEscalation` configuration
     option of the original Kubernetes PSP.
 
-    # Configuration
+    ## Settings
 
     The policy can be configured in this way:
 
@@ -61,7 +56,7 @@ annotations:
       chance that some non compliant pods are created by another high level resource
       (be it native to Kubernetes, or a CRD).
 
-    # Examples
+    ## Examples
 
     The following Pod will be rejected because the nginx container has
     `allowPrivilegeEscalation` enabled:
@@ -101,13 +96,3 @@ annotations:
         securityContext:
           allowPrivilegeEscalation: true
     ```
-
-    # Obtain policy
-
-    The policy is automatically published as an OCI artifact inside of
-    [this](https://github.com/orgs/kubewarden/packages/container/package/policies%2Fpsp-allow-privilege-escalation)
-    container registry.
-
-    # Using the policy
-
-    The easiest way to use this policy is through the [kubewarden-controller](https://github.com/kubewarden/kubewarden-controller).
