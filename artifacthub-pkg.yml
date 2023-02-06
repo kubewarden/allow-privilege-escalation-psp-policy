@@ -1,21 +1,21 @@
 ---
-version: 0.2.1
+version: 0.2.2
 name: allow-privilege-escalation-psp
 displayName: Allow Privilege Escalation PSP
-createdAt: '2023-01-19T14:46:21+02:00'
+createdAt: '2023-02-06T14:46:21+02:00'
 description: A Pod Security Policy that controls usage of `allowPrivilegeEscalation`
 license: Apache-2.0
 homeURL: https://github.com/kubewarden/allow-privilege-escalation-psp-policy
 containersImages:
 - name: policy
-  image: ghcr.io/kubewarden/policies/allow-privilege-escalation-psp:v0.2.1
+  image: ghcr.io/kubewarden/policies/allow-privilege-escalation-psp:v0.2.2
 keywords:
 - psp
 - container
 - privilege escalation
 links:
 - name: policy
-  url: https://github.com/kubewarden/allow-privilege-escalation-psp-policy/releases/download/v0.2.1/policy.wasm
+  url: https://github.com/kubewarden/allow-privilege-escalation-psp-policy/releases/download/v0.2.2/policy.wasm
 - name: source
   url: https://github.com/kubewarden/allow-privilege-escalation-psp-policy
 provider:
@@ -30,7 +30,19 @@ annotations:
     rules:
       - apiGroups: [""]
         apiVersions: ["v1"]
-        resources: ["deployment","replicaset","statefulset","daemonset","replicationcontroller","job","cronjob","pod"]
+        resources: ["pods"]
+        operations: ["CREATE"] # kubernetes doesn't allow to add/remove privileged containers to an already running pod
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        resources: ["replicationcontrollers"]
+        operations: ["CREATE", "UPDATE"]
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        resources: ["deployments","replicasets","statefulsets","daemonsets"]
+        operations: ["CREATE", "UPDATE"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        resources: ["jobs","cronjobs"]
         operations: ["CREATE", "UPDATE"]
   kubewarden/questions-ui: |
     questions:
