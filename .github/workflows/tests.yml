@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
-        uses: kubewarden/github-actions/policy-gh-action-dependencies@v1
+        uses: kubewarden/github-actions/kwctl-installer@v1
       - name: Build and annotate policy
         uses: kubewarden/github-actions/policy-build-rust@v1
         with:
