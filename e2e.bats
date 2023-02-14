@@ -1,48 +1,26 @@
 #!/usr/bin/env bats
 
+set -e
+
 @test "reject pod with allowPrivilegeEscalation disabled" {
-  run kwctl run policy.wasm -r test_data/req_pod_with_allowPrivilegeEscalation_disabled.json
-
-  # this prints the output when one the checks below fails
-  echo "output = ${output}"
-
-  # request rejected
-  [ "$status" -eq 0 ]
-  [ $(expr "$output" : '.*allowed.*false') -ne 0 ]
-  [ $(expr "$output" : ".*allowPrivilegeEscalation.*false.*") -ne 0 ]
+  output="$(kwctl run annotated-policy.wasm test_data/req_pod_with_allowPrivilegeEscalation_disabled.json)"
+  [ "$(echo "$output" | jq '.allowed')" = "false" ]
+  [ "$(echo "$output" | jq '.status.message')" = 'one of the containers has privilege escalation enabled' ]
 }
 
 @test "accept pod without security context" {
-  run kwctl run policy.wasm -r test_data/req_pod_without_security_context.json
-
-  # this prints the output when one the checks below fails
-  echo "output = ${output}"
-
-  # request accepted
-  [ "$status" -eq 0 ]
-  [ $(expr "$output" : '.*allowed.*true') -ne 0 ]
+  output="$(kwctl run annotated-policy.wasm test_data/req_pod_without_security_context.json)"
+  [ "$(echo "$output" | jq '.allowed')" = "true" ]
 }
 
 @test "reject pod with container with security context and allowPrivilegeEscalation set to true" {
-  run kwctl run policy.wasm -r test_data/req_pod_with_container_with_security_context_and_allowPrivilegeEscalation.json
-
-  # this prints the output when one the checks below fails
-  echo "output = ${output}"
-
-  # request rejected
-  [ "$status" -eq 0 ]
-  [ $(expr "$output" : '.*allowed.*false') -ne 0 ]
-  [ $(expr "$output" : ".*allowPrivilegeEscalation.*true.*") -ne 0 ]
+  output="$(kwctl run annotated-policy.wasm test_data/req_pod_with_container_with_security_context_and_allowPrivilegeEscalation.json)"
+  [ "$(echo "$output" | jq '.allowed')" = "false" ]
+  [ "$(echo "$output" | jq '.status.message')" = 'one of the containers has privilege escalation enabled' ]
 }
 
 @test "reject pod with init container with security context and allowPrivilegeEscalation set to true" {
-  run kwctl run policy.wasm -r test_data/req_pod_with_init_container_with_security_context_and_allowPrivilegeEscalation.json
-
-  # this prints the output when one the checks below fails
-  echo "output = ${output}"
-
-  # request rejected
-  [ "$status" -eq 0 ]
-  [ $(expr "$output" : '.*allowed.*false') -ne 0 ]
-  [ $(expr "$output" : ".*allowPrivilegeEscalation.*true.*") -ne 0 ]
+  output="$(kwctl run annotated-policy.wasm test_data/req_pod_with_init_container_with_security_context_and_allowPrivilegeEscalation.json)"
+  [ "$(echo "$output" | jq '.allowed')" = "false" ]
+  [ "$(echo "$output" | jq '.status.message')" = 'one of the init containers has privilege escalation enabled' ]
 }
