@@ -7,3 +7,4 @@ policy-annotated.wasm
 # already existing elements were commented out
 
 #/target
+annotated-policy.wasm
