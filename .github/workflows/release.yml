@@ -24,6 +24,5 @@ jobs:
 
     uses: kubewarden/github-actions/.github/workflows/reusable-release-policy-rust.yml@v3.1.0
     with:
-      input-wasm: allow_privilege_escalation_psp
       oci-target: ghcr.io/${{ github.repository_owner }}/policies/allow-privilege-escalation-psp
 
