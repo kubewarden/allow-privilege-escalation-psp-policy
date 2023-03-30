@@ -4,25 +4,25 @@
 #
 # This config can be saved to its default location with:
 #   kwctl scaffold artifacthub > artifacthub-pkg.yml 
-version: 0.2.3
+version: 0.2.4
 name: allow-privilege-escalation-psp
 displayName: Allow Privilege Escalation PSP
-createdAt: 2023-03-20T18:50:30.095911Z
+createdAt: 2023-03-30T12:49:37+00:00
 description: Replacement for the Kubernetes Pod Security Policy that controls the allowance of privilege escalation in containers and init containers of a pod
 license: Apache-2.0
 homeURL: https://github.com/kubewarden/allow-privilege-escalation-psp-policy
 containersImages:
 - name: policy
-  image: ghcr.io/kubewarden/policies/psp-allow-privilege-escalation:v0.2.3
+  image: ghcr.io/kubewarden/policies/psp-allow-privilege-escalation:v0.2.4
 links:
 - name: policy
-  url: https://github.com/kubewarden/allow-privilege-escalation-psp-policy/releases/download/v0.2.3/policy.wasm
+  url: https://github.com/kubewarden/allow-privilege-escalation-psp-policy/releases/download/v0.2.4/policy.wasm
 - name: source
   url: https://github.com/kubewarden/allow-privilege-escalation-psp-policy
 install: |
   The policy can be obtained using [`kwctl`](https://github.com/kubewarden/kwctl):
   ```console
-  kwctl pull ghcr.io/kubewarden/policies/psp-allow-privilege-escalation:v0.2.3
+  kwctl pull ghcr.io/kubewarden/policies/psp-allow-privilege-escalation:v0.2.4
   ```
 maintainers:
 - name: Kubewarden developers
@@ -48,6 +48,7 @@ annotations:
       required: false
       type: boolean
       variable: default_allow_privilege_escalation
+  kubewarden/resources: 'Deployment,Replicaset,Statefulset,Daemonset,Replicationcontroller,Job,Cronjob,Pod'
   kubewarden/rules: |
     - apiGroups:
       - ''
