@@ -23,7 +23,7 @@ annotations:
   io.artifacthub.displayName: Allow Privilege Escalation PSP
   io.artifacthub.resources: Deployment,Replicaset,Statefulset,Daemonset,Replicationcontroller,Job,Cronjob,Pod
   io.artifacthub.keywords: PSP, privilege escalation
-  io.kubewarden.policy.ociUrl: ghcr.io/kubewarden/policies/psp-allow-privilege-escalation
+  io.kubewarden.policy.ociUrl: ghcr.io/kubewarden/policies/allow-privilege-escalation-psp
   # kubewarden specific:
   io.kubewarden.policy.title: allow-privilege-escalation-psp
   io.kubewarden.policy.description: Replacement for the Kubernetes Pod Security Policy that controls the allowance of privilege escalation in containers and init containers of a pod
