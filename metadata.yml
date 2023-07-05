@@ -1,33 +1,60 @@
 rules:
-  - apiGroups: [""]
-    apiVersions: ["v1"]
-    resources: ["pods"]
-    operations: ["CREATE"] # kubernetes doesn't allow to add/remove privileged containers to an already running pod
-  - apiGroups: [""]
-    apiVersions: ["v1"]
-    resources: ["replicationcontrollers"]
-    operations: ["CREATE", "UPDATE"]
-  - apiGroups: ["apps"]
-    apiVersions: ["v1"]
-    resources: ["deployments","replicasets","statefulsets","daemonsets"]
-    operations: ["CREATE", "UPDATE"]
-  - apiGroups: ["batch"]
-    apiVersions: ["v1"]
-    resources: ["jobs","cronjobs"]
-    operations: ["CREATE", "UPDATE"]
+  - apiGroups:
+      - ''
+    apiVersions:
+      - v1
+    resources:
+      - pods
+    operations:
+      - CREATE
+  - apiGroups:
+      - ''
+    apiVersions:
+      - v1
+    resources:
+      - replicationcontrollers
+    operations:
+      - CREATE
+      - UPDATE
+  - apiGroups:
+      - apps
+    apiVersions:
+      - v1
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+      - daemonsets
+    operations:
+      - CREATE
+      - UPDATE
+  - apiGroups:
+      - batch
+    apiVersions:
+      - v1
+    resources:
+      - jobs
+      - cronjobs
+    operations:
+      - CREATE
+      - UPDATE
 mutating: true
 contextAware: false
 executionMode: kubewarden-wapc
 annotations:
-  # artifacthub specific:
+  # artifacthub specific
   io.artifacthub.displayName: Allow Privilege Escalation PSP
   io.artifacthub.resources: Deployment,Replicaset,Statefulset,Daemonset,Replicationcontroller,Job,Cronjob,Pod
   io.artifacthub.keywords: PSP, privilege escalation
+  # kubewarden specific
   io.kubewarden.policy.ociUrl: ghcr.io/kubewarden/policies/allow-privilege-escalation-psp
-  # kubewarden specific:
   io.kubewarden.policy.title: allow-privilege-escalation-psp
-  io.kubewarden.policy.description: Replacement for the Kubernetes Pod Security Policy that controls the allowance of privilege escalation in containers and init containers of a pod
+  io.kubewarden.policy.description: Replacement for the Kubernetes Pod Security Policy
+    that controls the allowance of privilege escalation in containers and init containers
+    of a pod
   io.kubewarden.policy.author: Kubewarden developers <cncf-kubewarden-maintainers@lists.cncf.io>
   io.kubewarden.policy.url: https://github.com/kubewarden/allow-privilege-escalation-psp-policy
   io.kubewarden.policy.source: https://github.com/kubewarden/allow-privilege-escalation-psp-policy
   io.kubewarden.policy.license: Apache-2.0
+  io.kubewarden.policy.severity: medium
+  io.kubewarden.policy.category: PSP
