@@ -7,7 +7,7 @@
 version: 0.2.6
 name: allow-privilege-escalation-psp
 displayName: Allow Privilege Escalation PSP
-createdAt: 2023-07-07T16:25:46.745596819Z
+createdAt: 2023-10-16T08:44:39.501150745Z
 description: Replacement for the Kubernetes Pod Security Policy that controls the allowance of privilege escalation in containers and init containers of a pod
 license: Apache-2.0
 homeURL: https://github.com/kubewarden/allow-privilege-escalation-psp-policy
@@ -26,6 +26,10 @@ install: |
   The policy can be obtained using [`kwctl`](https://github.com/kubewarden/kwctl):
   ```console
   kwctl pull ghcr.io/kubewarden/policies/allow-privilege-escalation-psp:v0.2.6
+  ```
+  Then, generate the policy manifest and tune it to your liking. For example:
+  ```console
+  kwctl scaffold manifest -t ClusterAdmissionPolicy registry://ghcr.io/kubewarden/policies/allow-privilege-escalation-psp:v0.2.6
   ```
 maintainers:
 - name: Kubewarden developers
