@@ -10,11 +10,11 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-k8s-openapi = { version = "0.21.0", default_features = false, features = [
+k8s-openapi = { version = "0.21.1", default_features = false, features = [
   "v1_29",
 ] }
 serde_json = "1.0"
-kubewarden-policy-sdk = "0.9.10"
+kubewarden-policy-sdk = "0.9.11"
 
 [dev-dependencies]
 serde_yaml = "0.9"
