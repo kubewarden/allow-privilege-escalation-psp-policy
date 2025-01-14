@@ -23,7 +23,6 @@ impl kubewarden_policy_sdk::settings::Validatable for Settings {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_yaml;
 
     #[test]
     fn test_policy_with_no_settings() -> Result<(), ()> {
@@ -48,7 +47,7 @@ mod tests {
 
         let payload = "default_allow_privilege_escalation: false";
         let settings = serde_yaml::from_str::<Settings>(payload)?;
-        assert_eq!(settings.default_allow_privilege_escalation, false);
+        assert!(!settings.default_allow_privilege_escalation);
         Ok(())
     }
 }

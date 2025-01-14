@@ -93,11 +93,9 @@ fn validate(payload: &[u8]) -> CallResult {
 
 fn has_allowed_privilege_escalation_container(containers: Vec<apicore::Container>) -> bool {
     containers.into_iter().any(|container| {
-        container
-            .security_context
-            .map_or(false, |security_context| {
-                security_context.allow_privilege_escalation.unwrap_or(false)
-            })
+        container.security_context.is_some_and(|security_context| {
+            security_context.allow_privilege_escalation.unwrap_or(false)
+        })
     })
 }
 
