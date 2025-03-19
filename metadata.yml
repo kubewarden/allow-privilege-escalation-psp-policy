@@ -49,6 +49,7 @@ annotations:
   # kubewarden specific
   io.kubewarden.policy.ociUrl: ghcr.io/kubewarden/policies/allow-privilege-escalation-psp
   io.kubewarden.policy.title: allow-privilege-escalation-psp
+  io.kubewarden.policy.version: 0.2.7
   io.kubewarden.policy.description: Replacement for the Kubernetes Pod Security Policy
     that controls the allowance of privilege escalation in containers and init containers
     of a pod
